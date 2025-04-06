@@ -11,13 +11,20 @@ const clients = [];
 server.on("connection", (socket) => {
   console.log("A new connection to the server!");
 
+  const clientID = clients.length + 1;
+  socket.write(`id-${clientID}`);
+
   socket.on("data", (data) => {
-    clients.map((socket) => {
-      socket.write(data);
+    const dataString = data.toString("utf-8");
+    const id = dataString.substring(0, dataString.indexOf("-"));
+    const message = dataString.substring(dataString.indexOf("-message-") + 9);
+
+    clients.map((client) => {
+      client.socket.write(`> User ${id}: ${message}`);
     });
   });
 
-  clients.push(socket);
+  clients.push({ id: clientID.toString(), socket });
 });
 
 server.listen(3008, "127.0.0.1", () => {
